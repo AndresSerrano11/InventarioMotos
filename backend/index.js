@@ -1,3 +1,7 @@
+
+import dotenv from 'dotenv';
+dotenv.config();
+
 import config from './config.js';
 import express from 'express';
 import mongoose from 'mongoose';
@@ -10,7 +14,6 @@ import empleadoRoutes from './routes/empleado.js';
 import motoRoutes from './routes/moto.js';
 import proveedorRoutes from './routes/proveedor.js';
 import conectarDB from './config.js';
-import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,8 +22,6 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, '../frontend')));
 app.use(express.json());
-
-dotenv.config();
 
 
 
