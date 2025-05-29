@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD Almacenes</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+  <ul>
+    <li><a href="index.html">Motos</a></li>
+    <li><a href="almacen.html">Almacenes</a></li>
+    <li><a href="proveedores.html">Proveedores</a></li>
+    <li><a href="empleado.html">Empleados</a></li>
+    <li><a href="compradores.html">Compradores</a></li>
+    <li><a href="ventas.html">Ventas</a></li>
+  </ul>
+</nav>
+  <h1>CRUD Almacenes</h1>
+  <form id="form-almacen">
+    <input type="text" id="direccion" placeholder="Dirección" required>
+    <input type="number" id="capacidad" placeholder="Capacidad" required>
+    <button type="submit">Agregar/Actualizar</button>
+  </form>
+  <h2>Lista de Almacenes</h2>
+  <div id="lista-almacenes" class="motos-container"></div>
+  <script>
+    const lista = document.getElementById('lista-almacenes');
+    const form = document.getElementById('form-almacen');
+    let editandoId = null;
+
+    async function cargarAlmacenes() {
+      const res = await fetch('/almacenes');
+      const almacenes = await res.json();
+      lista.innerHTML = '';
+      almacenes.forEach(a => {
+        const card = document.createElement('div');
+        card.className = 'moto-card';
+        card.innerHTML = `
+          <div><strong>${a.direccion}</strong></div>
+          <div>Capacidad: ${a.capacidad}</div>
+          <button class="editar-btn">Editar</button>
+          <button class="eliminar-btn">Eliminar</button>
+        `;
+        card.querySelector('.editar-btn').onclick = () => {
+          editandoId = a._id;
+          form.direccion.value = a.direccion;
+          form.capacidad.value = a.capacidad;
+        };
+        card.querySelector('.eliminar-btn').onclick = async () => {
+          if (confirm('¿Eliminar almacén?')) {
+            await fetch(`/almacenes/${a._id}`, { method: 'DELETE' });
+            cargarAlmacenes();
+          }
+        };
+        lista.appendChild(card);
+      });
+    }
+    cargarAlmacenes();
+
+    form.onsubmit = async e => {
+      e.preventDefault();
+      const data = {
+        direccion: form.direccion.value,
+        capacidad: form.capacidad.value
+      };
+      if (editandoId) {
+        await fetch(`/almacenes/${editandoId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        editandoId = null;
+      } else {
+        await fetch('/almacenes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+      form.reset();
+      cargarAlmacenes();
+    };
+  </script>
+</body>
+</html>

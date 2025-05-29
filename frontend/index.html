@@ -6,21 +6,37 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Barra de navegación -->
+  <nav class="navbar">
+  <ul>
+    <li><a href="index.html">Motos</a></li>
+    <li><a href="almacen.html">Almacenes</a></li>
+    <li><a href="proveedores.html">Proveedores</a></li>
+    <li><a href="empleado.html">Empleados</a></li>
+    <li><a href="compradores.html">Compradores</a></li>
+    <li><a href="ventas.html">Ventas</a></li>
+  </ul>
+</nav>
+
   <h1>Inventario de Motos</h1>
 
-  <form id="formulario">
-    <input type="text" id="nombre" placeholder="Nombre" required>
+  <form id="formulario" enctype="multipart/form-data">
     <input type="text" id="marca" placeholder="Marca" required>
+    <input type="text" id="modelo" placeholder="Modelo" required>
+    <input type="number" id="anio" placeholder="Año" required>
+    <input type="text" id="color" placeholder="Color" required>
     <input type="number" id="precio" placeholder="Precio" required>
-    <button type="submit">Agregar Moto</button>
+    <input type="number" id="stock" placeholder="Stock" required>
+    <input type="file" id="imagen" accept="image/*">
+    <button type="submit">Agregar/Actualizar</button>
   </form>
 
   <h2>Lista de Motos</h2>
-  <ul id="lista-motos">
+  <div id="lista-motos" class="motos-container">
     <!-- Las motos se agregarán aquí dinámicamente -->
-     
-  </ul>
+</div>
 
+  <script src="config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

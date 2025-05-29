@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import config from './config.js';
 import express from 'express';
 import mongoose from 'mongoose';
@@ -9,8 +12,8 @@ import compradorRoutes from './routes/comprador.js';
 import empleadoRoutes from './routes/empleado.js';
 import motoRoutes from './routes/moto.js';
 import proveedorRoutes from './routes/proveedor.js';
+import ventaRoutes from './routes/venta.js';
 import conectarDB from './config.js';
-import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,8 +22,6 @@ const app = express();
 
 app.use(express.static(path.join(__dirname, '../frontend')));
 app.use(express.json());
-
-dotenv.config();
 
 
 
@@ -35,6 +36,7 @@ app.use('/compradores', compradorRoutes);
 app.use('/empleados', empleadoRoutes);
 app.use('/motos', motoRoutes);
 app.use('/proveedores', proveedorRoutes);
+app.use('/ventas', ventaRoutes);
 
 // Manejo de errores
 app.use((err, req, res, next) => {
