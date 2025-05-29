@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD Proveedores</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+  <ul>
+    <li><a href="index.html">Motos</a></li>
+    <li><a href="almacen.html">Almacenes</a></li>
+    <li><a href="proveedores.html">Proveedores</a></li>
+    <li><a href="empleado.html">Empleados</a></li>
+    <li><a href="compradores.html">Compradores</a></li>
+    <li><a href="ventas.html">Ventas</a></li>
+  </ul>
+</nav>
+  <h1>CRUD Proveedores</h1>
+  <form id="form-proveedor">
+    <input type="text" id="name" placeholder="Nombre" required>
+    <input type="text" id="contactName" placeholder="Contacto">
+    <input type="text" id="phone" placeholder="Teléfono">
+    <input type="email" id="email" placeholder="Email">
+    <input type="text" id="direccion" placeholder="Dirección">
+    <button type="submit">Agregar/Actualizar</button>
+  </form>
+  <h2>Lista de Proveedores</h2>
+  <div id="lista-proveedores" class="motos-container"></div>
+  <script>
+    const lista = document.getElementById('lista-proveedores');
+    const form = document.getElementById('form-proveedor');
+    let editandoId = null;
+
+    async function cargarProveedores() {
+      const res = await fetch('/proveedores');
+      const proveedores = await res.json();
+      lista.innerHTML = '';
+      proveedores.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'moto-card';
+        card.innerHTML = `
+          <div><strong>${p.name}</strong></div>
+          <div>Contacto: ${p.contactName || ''}</div>
+          <div>Teléfono: ${p.phone || ''}</div>
+          <div>Email: ${p.email || ''}</div>
+          <div>Dirección: ${p.direccion || ''}</div>
+          <button class="editar-btn">Editar</button>
+          <button class="eliminar-btn">Eliminar</button>
+        `;
+        card.querySelector('.editar-btn').onclick = () => {
+          editandoId = p._id;
+          form.name.value = p.name;
+          form.contactName.value = p.contactName || '';
+          form.phone.value = p.phone || '';
+          form.email.value = p.email || '';
+          form.direccion.value = p.direccion || '';
+        };
+        card.querySelector('.eliminar-btn').onclick = async () => {
+          if (confirm('¿Eliminar proveedor?')) {
+            await fetch(`/proveedores/${p._id}`, { method: 'DELETE' });
+            cargarProveedores();
+          }
+        };
+        lista.appendChild(card);
+      });
+    }
+    cargarProveedores();
+
+    form.onsubmit = async e => {
+      e.preventDefault();
+      const data = {
+        name: form.name.value,
+        contactName: form.contactName.value,
+        phone: form.phone.value,
+        email: form.email.value,
+        direccion: form.direccion.value
+      };
+      if (editandoId) {
+        await fetch(`/proveedores/${editandoId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        editandoId = null;
+      } else {
+        await fetch('/proveedores', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+      form.reset();
+      cargarProveedores();
+    };
+  </script>
+</body>
+</html>

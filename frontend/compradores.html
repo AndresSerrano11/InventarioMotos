@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD Compradores</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <ul>
+      <li><a href="index.html">Motos</a></li>
+      <li><a href="almacen.html">Almacenes</a></li>
+      <li><a href="proveedores.html">Proveedores</a></li>
+      <li><a href="empleado.html">Empleados</a></li>
+      <li><a href="compradores.html">Compradores</a></li>
+      <li><a href="ventas.html">Ventas</a></li>
+    </ul>
+  </nav>
+  <h1>CRUD Compradores</h1>
+  <form id="form-comprador">
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <input type="email" id="email" placeholder="Email">
+    <input type="text" id="telefono" placeholder="Teléfono">
+    <button type="submit">Agregar/Actualizar</button>
+  </form>
+  <h2>Lista de Compradores</h2>
+  <div id="lista-compradores" class="motos-container"></div>
+  <script>
+    const lista = document.getElementById('lista-compradores');
+    const form = document.getElementById('form-comprador');
+    let editandoId = null;
+
+    async function cargarCompradores() {
+      const res = await fetch('/compradores');
+      const compradores = await res.json();
+      lista.innerHTML = '';
+      compradores.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'moto-card';
+        card.innerHTML = `
+          <div><strong>${c.nombre}</strong></div>
+          <div>Email: ${c.email || ''}</div>
+          <div>Teléfono: ${c.telefono || ''}</div>
+          <button class="editar-btn">Editar</button>
+          <button class="eliminar-btn">Eliminar</button>
+        `;
+        card.querySelector('.editar-btn').onclick = () => {
+          editandoId = c._id;
+          form.nombre.value = c.nombre;
+          form.email.value = c.email || '';
+          form.telefono.value = c.telefono || '';
+        };
+        card.querySelector('.eliminar-btn').onclick = async () => {
+          if (confirm('¿Eliminar comprador?')) {
+            await fetch(`/compradores/${c._id}`, { method: 'DELETE' });
+            cargarCompradores();
+          }
+        };
+        lista.appendChild(card);
+      });
+    }
+    cargarCompradores();
+
+    form.onsubmit = async e => {
+      e.preventDefault();
+      const data = {
+        nombre: form.nombre.value,
+        email: form.email.value,
+        telefono: form.telefono.value
+      };
+      if (editandoId) {
+        await fetch(`/compradores/${editandoId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        editandoId = null;
+      } else {
+        await fetch('/compradores', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+      form.reset();
+      cargarCompradores();
+    };
+  </script>
+</body>
+</html>

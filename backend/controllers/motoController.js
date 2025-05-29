@@ -1,4 +1,12 @@
 import Moto from '../models/moto.js';
+import AWS from 'aws-sdk';
+
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION
+});
+const BUCKET = process.env.AWS_BUCKET_NAME;
 
 const motoController = {
   getAll: async (req, res) => {
@@ -15,17 +23,56 @@ const motoController = {
   },
 
   create: async (req, res) => {
-    const nuevaMoto = new Moto(req.body);
-    await nuevaMoto.save();
-    res.status(201).json(nuevaMoto);
+    try {
+      let imagenUrl = '';
+      if (req.file) {
+        const params = {
+          Bucket: BUCKET,
+          Key: 'motos/' + Date.now() + '-' + req.file.originalname,
+          Body: req.file.buffer,
+          ContentType: req.file.mimetype
+          // ACL: 'public-read'
+        };
+        const uploadResult = await s3.upload(params).promise();
+        imagenUrl = uploadResult.Location;
+      }
+
+      const nuevaMoto = new Moto({
+        ...req.body,
+        imagenUrl
+      });
+      await nuevaMoto.save();
+      res.status(201).json(nuevaMoto);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   },
 
   update: async (req, res) => {
-    const motoActualizada = await Moto.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!motoActualizada) {
-      return res.status(404).json({ mensaje: 'Moto no encontrada' });
+    try {
+      let imagenUrl = req.body.imagenUrl; // Por si no se sube nueva imagen
+      if (req.file) {
+        const params = {
+          Bucket: BUCKET,
+          Key: 'motos/' + Date.now() + '-' + req.file.originalname,
+          Body: req.file.buffer,
+          ContentType: req.file.mimetype
+        };
+        const uploadResult = await s3.upload(params).promise();
+        imagenUrl = uploadResult.Location;
+      }
+      const motoActualizada = await Moto.findByIdAndUpdate(
+        req.params.id,
+        {
+          ...req.body,
+          imagenUrl
+        },
+        { new: true }
+      );
+      res.json(motoActualizada);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-    res.json(motoActualizada);
   },
 
   delete: async (req, res) => {

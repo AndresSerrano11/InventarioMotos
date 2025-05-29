@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD Empleados</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+  <ul>
+    <li><a href="index.html">Motos</a></li>
+    <li><a href="almacen.html">Almacenes</a></li>
+    <li><a href="proveedores.html">Proveedores</a></li>
+    <li><a href="empleado.html">Empleados</a></li>
+    <li><a href="compradores.html">Compradores</a></li>
+    <li><a href="ventas.html">Ventas</a></li>
+  </ul>
+</nav>
+  <h1>CRUD Empleados</h1>
+  <form id="form-empleado">
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <input type="text" id="rol" placeholder="Rol" required>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="text" id="telefono" placeholder="Teléfono">
+    <button type="submit">Agregar/Actualizar</button>
+  </form>
+  <h2>Lista de Empleados</h2>
+  <div id="lista-empleados" class="motos-container"></div>
+  <script>
+    const lista = document.getElementById('lista-empleados');
+    const form = document.getElementById('form-empleado');
+    let editandoId = null;
+
+    async function cargarEmpleados() {
+      const res = await fetch('/empleados');
+      const empleados = await res.json();
+      lista.innerHTML = '';
+      empleados.forEach(e => {
+        const card = document.createElement('div');
+        card.className = 'moto-card';
+        card.innerHTML = `
+          <div><strong>${e.nombre}</strong></div>
+          <div>Rol: ${e.rol}</div>
+          <div>Email: ${e.email}</div>
+          <div>Teléfono: ${e.telefono || ''}</div>
+          <button class="editar-btn">Editar</button>
+          <button class="eliminar-btn">Eliminar</button>
+        `;
+        card.querySelector('.editar-btn').onclick = () => {
+          editandoId = e._id;
+          form.nombre.value = e.nombre;
+          form.rol.value = e.rol;
+          form.email.value = e.email;
+          form.telefono.value = e.telefono || '';
+        };
+        card.querySelector('.eliminar-btn').onclick = async () => {
+          if (confirm('¿Eliminar empleado?')) {
+            await fetch(`/empleados/${e._id}`, { method: 'DELETE' });
+            cargarEmpleados();
+          }
+        };
+        lista.appendChild(card);
+      });
+    }
+    cargarEmpleados();
+
+    form.onsubmit = async e => {
+      e.preventDefault();
+      const data = {
+        nombre: form.nombre.value,
+        rol: form.rol.value,
+        email: form.email.value,
+        telefono: form.telefono.value
+      };
+      if (editandoId) {
+        await fetch(`/empleados/${editandoId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        editandoId = null;
+      } else {
+        await fetch('/empleados', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+      form.reset();
+      cargarEmpleados();
+    };
+  </script>
+</body>
+</html>

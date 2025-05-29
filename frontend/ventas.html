@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD Ventas</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <ul>
+      <li><a href="index.html">Motos</a></li>
+      <li><a href="almacen.html">Almacenes</a></li>
+      <li><a href="proveedores.html">Proveedores</a></li>
+      <li><a href="empleado.html">Empleados</a></li>
+      <li><a href="compradores.html">Compradores</a></li>
+      <li><a href="ventas.html">Ventas</a></li>
+    </ul>
+  </nav>
+  <h1>CRUD Ventas</h1>
+  <form id="form-venta">
+    <select id="moto" required></select>
+    <select id="comprador" required></select>
+    <input type="number" id="precio" placeholder="Precio" required readonly>
+    <input type="number" id="cantidad" placeholder="Cantidad" min="1" required>
+    <input type="number" id="total" placeholder="Total" readonly>
+    <input type="date" id="fecha">
+    <button type="submit">Agregar/Actualizar</button>
+  </form>
+  <h2>Lista de Ventas</h2>
+  <div id="lista-ventas" class="motos-container"></div>
+  <script>
+    let motosData = [];
+    const lista = document.getElementById('lista-ventas');
+    const form = document.getElementById('form-venta');
+    let editandoId = null;
+
+    async function cargarOpciones() {
+      const [motos, compradores] = await Promise.all([
+        fetch('/motos').then(r => r.json()),
+        fetch('/compradores').then(r => r.json())
+      ]);
+      motosData = motos;
+      form.moto.innerHTML = motos.map(m => 
+        `<option value="${m._id}" data-precio="${m.precio}" data-stock="${m.stock}">
+          ${m.marca} ${m.modelo}
+        </option>`
+      ).join('');
+      form.comprador.innerHTML = compradores.map(c => 
+        `<option value="${c._id}">${c.nombre}</option>`
+      ).join('');
+      actualizarPrecioYStock();
+    }
+
+    function actualizarPrecioYStock() {
+      const selectedMoto = motosData.find(m => m._id === form.moto.value);
+      if (selectedMoto) {
+        form.precio.value = selectedMoto.precio;
+        form.cantidad.max = selectedMoto.stock;
+        form.cantidad.value = 1;
+        form.total.value = selectedMoto.precio * 1;
+      } else {
+        form.precio.value = '';
+        form.cantidad.value = '';
+        form.total.value = '';
+      }
+    }
+
+    form.moto.onchange = actualizarPrecioYStock;
+    form.cantidad.oninput = () => {
+      const precio = Number(form.precio.value);
+      const cantidad = Number(form.cantidad.value);
+      form.total.value = precio * cantidad;
+    };
+
+    async function cargarVentas() {
+      const res = await fetch('/ventas');
+      const ventas = await res.json();
+      lista.innerHTML = '';
+      ventas.forEach(v => {
+        const card = document.createElement('div');
+        card.className = 'moto-card';
+        card.innerHTML = `
+          <div><strong>Moto:</strong> ${v.moto?.marca || ''} ${v.moto?.modelo || ''}</div>
+          <div><strong>Comprador:</strong> ${v.comprador?.nombre || ''}</div>
+          <div><strong>Precio:</strong> $${v.precio}</div>
+          <div><strong>Cantidad:</strong> ${v.cantidad}</div>
+          <div><strong>Total:</strong> $${v.total}</div>
+          <div><strong>Fecha:</strong> ${v.fecha ? new Date(v.fecha).toLocaleDateString() : ''}</div>
+          <button class="editar-btn">Editar</button>
+          <button class="eliminar-btn">Eliminar</button>
+        `;
+        card.querySelector('.editar-btn').onclick = () => {
+          editandoId = v._id;
+          form.moto.value = v.moto?._id || '';
+          form.comprador.value = v.comprador?._id || '';
+          form.precio.value = v.precio;
+          form.fecha.value = v.fecha ? v.fecha.substr(0,10) : '';
+        };
+        card.querySelector('.eliminar-btn').onclick = async () => {
+          if (confirm('¿Eliminar venta?')) {
+            await fetch(`/ventas/${v._id}`, { method: 'DELETE' });
+            cargarVentas();
+          }
+        };
+        lista.appendChild(card);
+      });
+    }
+
+    form.onsubmit = async e => {
+      e.preventDefault();
+      const data = {
+        moto: form.moto.value,
+        comprador: form.comprador.value,
+        precio: form.precio.value,
+        cantidad: form.cantidad.value,
+        total: form.total.value,
+        fecha: form.fecha.value || undefined
+      };
+      if (editandoId) {
+        await fetch(`/ventas/${editandoId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        editandoId = null;
+      } else {
+        await fetch('/ventas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+      form.reset();
+      cargarVentas();
+    };
+
+    cargarOpciones().then(cargarVentas);
+  </script>
+</body>
+</html>
