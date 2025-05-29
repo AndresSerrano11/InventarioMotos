@@ -1,10 +1,11 @@
+
 const lista = document.getElementById('lista-motos');
 const formulario = document.getElementById('formulario');
 
 let editandoId = null;
 
 async function cargarMotos() {
-  const respuesta = await fetch('http://localhost:3000/motos');
+  const respuesta = await fetch(`${API_URL}/motos`);
   const motos = await respuesta.json();
   lista.innerHTML = '';
   motos.forEach(moto => {
@@ -22,7 +23,7 @@ async function cargarMotos() {
     // Botón eliminar
     card.querySelector('.eliminar-btn').onclick = async () => {
       if (confirm('¿Seguro que deseas eliminar esta moto?')) {
-        await fetch(`http://localhost:3000/motos/${moto._id}`, { method: 'DELETE' });
+        await fetch(`${API_URL}/motos/${moto._id}`, { method: 'DELETE' });
         cargarMotos();
       }
     };
@@ -59,14 +60,14 @@ formulario.addEventListener('submit', async (e) => {
 
   if (editandoId) {
     // PUT para actualizar
-    await fetch(`http://localhost:3000/motos/${editandoId}`, {
+    await fetch(`${API_URL}/motos/${editandoId}`, {
       method: 'PUT',
       body: formData
     });
     editandoId = null;
   } else {
     // POST para crear
-    await fetch('http://localhost:3000/motos', {
+    await fetch(`${API_URL}/motos`, {
       method: 'POST',
       body: formData
     });
@@ -75,4 +76,7 @@ formulario.addEventListener('submit', async (e) => {
   formulario.reset();
   cargarMotos();
 });
+
+
+
 
