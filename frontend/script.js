@@ -1,4 +1,4 @@
-
+import { API_URL } from './config.js';
 const lista = document.getElementById('lista-motos');
 const formulario = document.getElementById('formulario');
 

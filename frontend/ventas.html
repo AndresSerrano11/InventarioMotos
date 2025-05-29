@@ -29,6 +29,7 @@
   <h2>Lista de Ventas</h2>
   <div id="lista-ventas" class="motos-container"></div>
   <script>
+    const API_URL = 'http://TU_IP_O_DOMINIO:3000'; // o como lo tengas en config.js
     let motosData = [];
     const lista = document.getElementById('lista-ventas');
     const form = document.getElementById('form-venta');
@@ -73,7 +74,7 @@
     };
 
     async function cargarVentas() {
-      const res = await fetch('/ventas');
+      const res = await fetch(`${API_URL}/ventas`);
       const ventas = await res.json();
       lista.innerHTML = '';
       ventas.forEach(v => {
@@ -124,7 +125,7 @@
         });
         editandoId = null;
       } else {
-        await fetch('/ventas', {
+        await fetch(`${API_URL}/ventas`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
