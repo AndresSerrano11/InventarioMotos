@@ -1,9 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-
-import config from './config.js';
 import express from 'express';
-import mongoose from 'mongoose';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
@@ -40,11 +37,11 @@ app.use('/ventas', ventaRoutes);
 
 // Manejo de errores
 app.use((err, req, res, next) => {
-  console.error('💥 Error inesperado:', err);
+  console.error('Error inesperado:', err);
   res.status(500).json({ error: 'Algo salió mal. Intenta más tarde.' });
 });
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor escuchando en el puerto ${PORT}`);
+  console.log(`Servidor escuchando en el puerto ${PORT}`);
 });

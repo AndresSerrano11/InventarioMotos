@@ -36,7 +36,6 @@ async function cargarMotos() {
       document.getElementById('color').value = moto.color;
       document.getElementById('precio').value = moto.precio;
       document.getElementById('stock').value = moto.stock;
-      // No se puede precargar la imagen por seguridad del navegador
       formulario.scrollIntoView({ behavior: 'smooth' });
     };
     lista.appendChild(card);
